@@ -45,7 +45,7 @@ void DrawClockDisplay(int rssi, int batteryLevel) {
 
   // Center: Large time
   M5.Display.setFont(&FreeSansBold24pt7b);
-  M5.Display.setTextSize(4);
+  M5.Display.setTextSize(3);
   M5.Display.setTextDatum(TC_DATUM);
   M5.Display.drawString(timeBuf, w / 2, h / 2 - 65);
 
