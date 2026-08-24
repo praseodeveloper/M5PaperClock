@@ -33,12 +33,16 @@ void DrawClockDisplay(int rssi, int batteryLevel) {
   M5.Display.drawString(dateBuf, 20, 18);
 
   // Header: WiFi (center)
-  // M5.Display.setTextDatum(TC_DATUM);
-  // M5.Display.drawString(WifiGetRssiAsQuality(rssi) + "% WiFi", w / 2, 18);
+//   char wifiBuf[16];
+//   WifiGetRssiAsQuality(rssi, wifiBuf, sizeof(wifiBuf));
+//   M5.Display.setTextDatum(TC_DATUM);
+//   M5.Display.drawString(wifiBuf, w / 2, 18);
 
   // Header: Battery (right)
   M5.Display.setTextDatum(TR_DATUM);
-  M5.Display.drawString(String(batteryLevel) + "% Bat", w - 20, 18);
+  char batteryBuf[12];
+  snprintf(batteryBuf, sizeof(batteryBuf), "%d%% Bat", batteryLevel);
+  M5.Display.drawString(batteryBuf, w - 20, 18);
 
   // Center: Large time
   M5.Display.setFont(&FreeSansBold24pt7b);
@@ -49,11 +53,18 @@ void DrawClockDisplay(int rssi, int batteryLevel) {
   // Temperature and humidity display is temporarily disabled.
 
   // Bottom: Battery voltage
-  int16_t batVolt = M5.Power.getBatteryVoltage();
-  M5.Display.setFont(&FreeSansBold12pt7b);
-  M5.Display.setTextSize(1);
-  M5.Display.setTextDatum(TC_DATUM);
-  M5.Display.drawString(String(batVolt) + " mV", w / 2, h - 40);
+  //   int16_t batVolt = M5.Power.getBatteryVoltage();
+  //   M5.Display.setFont(&FreeSansBold12pt7b);
+  //   M5.Display.setTextSize(1);
+  //   M5.Display.setTextDatum(TC_DATUM);
+  //   char voltageBuf[12];
+  //   snprintf(voltageBuf, sizeof(voltageBuf), "%d mV", batVolt);
+  //   M5.Display.drawString(voltageBuf, w / 2, h - 40);
+
+  if (g_syncReason[0]) {
+    M5.Display.setTextColor(TFT_BLACK);
+    M5.Display.drawString(g_syncReason, w / 2, h - 75);
+  }
 
   M5.Display.endWrite();
 }

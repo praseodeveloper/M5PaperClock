@@ -3,6 +3,8 @@
    RSSI signal quality helpers.
 */
 #pragma once
+#include <cstdio>
+#include <cstddef>
 
 /* Convert RSSI to quality percentage (0-100) */
 int WifiGetRssiAsQualityInt(int rssi) {
@@ -18,7 +20,7 @@ int WifiGetRssiAsQualityInt(int rssi) {
   return quality;
 }
 
-/* Convert RSSI to quality string */
-String WifiGetRssiAsQuality(int rssi) {
-  return String(WifiGetRssiAsQualityInt(rssi));
+/* Convert RSSI to quality string (no heap allocation) */
+void WifiGetRssiAsQuality(int rssi, char* out, size_t len) {
+  snprintf(out, len, "%d", WifiGetRssiAsQualityInt(rssi));
 }
