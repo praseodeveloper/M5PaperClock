@@ -23,11 +23,19 @@ void DrawClockDisplay(int rssi, int batteryLevel) {
   // Clear entire screen
   M5.Display.clearDisplay();
 
+  const int frameInset = 6;
+  const int frameThickness = 3;
+  for (int i = 0; i < frameThickness; ++i) {
+    M5.Display.drawRoundRect(frameInset + i, frameInset + i,
+                             w - 2 * (frameInset + i),
+                             h - 2 * (frameInset + i), 12 - i, TFT_BLACK);
+  }
+
   // Separator line
-  M5.Display.drawLine(0, 55, w, 55, BLACK);
+  M5.Display.fillRect(frameInset + 8, 46, w - 2 * (frameInset + 8), 3, BLACK);
 
   // Header: Date (left)
-  M5.Display.setFont(&FreeSansBold12pt7b);
+  M5.Display.setFont(&DejaVu18);
   M5.Display.setTextDatum(TL_DATUM);
   M5.Display.drawString(dateBuf, 20, 18);
 
@@ -44,10 +52,31 @@ void DrawClockDisplay(int rssi, int batteryLevel) {
   M5.Display.drawString(batteryBuf, w - 20, 18);
 
   // Center: Large time
-  M5.Display.setFont(&FreeSansBold24pt7b);
-  M5.Display.setTextSize(3);
-  M5.Display.setTextDatum(TC_DATUM);
-  M5.Display.drawString(timeBuf, w / 2, h / 2 - 65);
+  M5.Display.setFont(&DejaVu72);
+  int32_t timeW = M5.Display.textWidth(timeBuf) + 4;
+  int32_t timeH = M5.Display.fontHeight() + 4;
+  LGFX_Sprite timeSpr(&M5.Display);
+  timeSpr.setColorDepth(16);
+  if (timeSpr.createSprite(timeW, timeH)) {
+    timeSpr.fillSprite(TFT_WHITE);
+    timeSpr.setFont(&DejaVu72);
+    timeSpr.setTextColor(TFT_BLACK, TFT_WHITE);
+    timeSpr.setTextDatum(TC_DATUM);
+    timeSpr.drawString(timeBuf, timeW / 2, 2);
+    timeSpr.pushRotateZoomWithAA(w / 2, h / 2 - 24, 0.0f, 2.0f, 2.0f, TFT_WHITE);
+    timeSpr.deleteSprite();
+
+    // Rounded frame around the zoomed time (sprite is drawn 2x centered there)
+    int32_t boxW = timeW * 2 + 48;
+    int32_t boxH = timeH * 2 + 24;
+    M5.Display.drawRoundRect(w / 2 - boxW / 2, h / 2 - 24 - boxH / 2,
+                             boxW, boxH, 20, TFT_BLACK);
+  } else {
+    M5.Display.setTextSize(2);
+    M5.Display.setTextDatum(TC_DATUM);
+    M5.Display.drawString(timeBuf, w / 2, h / 2 - 95);
+    M5.Display.setTextSize(1);
+  }
 
   // Temperature and humidity, read fresh on every render (each minute).
   // The bundled FreeSans fonts cover ASCII only (0x20-0x7E, no degree
@@ -68,8 +97,7 @@ void DrawClockDisplay(int rssi, int batteryLevel) {
   snprintf(climateBuf, sizeof(climateBuf), "%s  %s", tempBuf, restBuf);
 
   int16_t climateY = h / 2 + 105;
-  M5.Display.setFont(&FreeSansBold12pt7b);
-  M5.Display.setTextSize(1);
+  M5.Display.setFont(&DejaVu24);
   M5.Display.setTextDatum(TC_DATUM);
   M5.Display.setTextColor(TFT_BLACK);
   M5.Display.drawString(climateBuf, w / 2, climateY);
@@ -77,9 +105,8 @@ void DrawClockDisplay(int rssi, int batteryLevel) {
   int16_t slotLeft =
     w / 2 - M5.Display.textWidth(climateBuf) / 2 + M5.Display.textWidth(tempBuf);
   int16_t ringX = slotLeft + M5.Display.textWidth(" ");
-  // TC_DATUM renders digits from y+1 to y+17 (baseline = y + font ascent 17),
-  // so top-aligning the ring with the digit tops puts it in superscript pose.
-  int16_t ringY = climateY + 1 + 3;
+  // Top-aligning the ring with the digit tops puts it in superscript pose.
+  int16_t ringY = climateY + 3;
   M5.Display.drawCircle(ringX, ringY, 3, TFT_BLACK);
   M5.Display.drawCircle(ringX, ringY, 2, TFT_BLACK);
 

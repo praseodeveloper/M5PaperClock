@@ -156,6 +156,14 @@ void setup() {
   Serial.flush();
 
   M5.Power.setLed(0);
+
+  // WORKAROUND: keep the main-power latch asserted through deep sleep.
+  // GPIO2 (MAIN_PWR) loses its level when the core sleeps; on battery that
+  // releases the power MOSFET and the whole board shuts off instead of
+  // waking on the next alarm (USB 5V masks the problem).
+  gpio_hold_en(GPIO_NUM_2);
+  gpio_deep_sleep_hold_en();
+
   Serial.println("Entering timed sleep...");
   M5.Power.timerSleep(sleepSeconds);
 }
